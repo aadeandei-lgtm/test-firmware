@@ -29,7 +29,7 @@ Please read instruction given.
 ### Firmware details
 
 Login info
-* 192.168.1.1 | user: root | password: friwrt
+* 192.168.3.2 | user: root | password: friwrt
 * SSID: friWrt_2g / friWrt_5g | password: friwrt2023
 
 - Modemmanager protocol for connecting 4g/5g modems (tested using Dell DW5821e Snapdragon X20 LTE),
