@@ -71,11 +71,6 @@ files2+=(
     "luci-app-lite-watchdog|https://api.github.com/repos/4IceG/luci-app-lite-watchdog/releases/latest"
     "luci-app-3ginfo-lite|https://api.github.com/repos/4IceG/luci-app-3ginfo-lite/releases/latest"
     "luci-app-netmonitor|https://api.github.com/repos/rtaserver/rta-packages/releases"
-    "luci-app-base64|https://api.github.com/repos/rtaserver/rta-packages/releases"
-    "luci-theme-rta|https://api.github.com/repos/rtaserver/RTA-Theme-OpenWrt/releases/latest"
-    "luci-app-rtaconfig|https://api.github.com/repos/rtaserver/RTA-Theme-OpenWrt/releases/latest"
-    "luci-theme-alpha|https://api.github.com/repos/derisamedia/luci-theme-alpha/releases/latest"
-    "luci-app-alpha-config|https://api.github.com/repos/derisamedia/luci-theme-alpha/releases/latest"
 )
 
 echo "#########################################"

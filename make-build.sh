@@ -48,17 +48,11 @@ PACKAGES+=" internet-detector luci-app-internet-detector"  # nlbwmon+luci-app-nl
 # Speedtest
 PACKAGES+=" librespeed-go python3-speedtest-cli iperf3 luci-app-netspeedtest"
 
-# Base64 Encode Decode
-PACKAGES+=" luci-app-base64"
-
 # Argon Theme
 PACKAGES+=" luci-theme-argon luci-app-argon-config"
 
-# Alpha Theme
-PACKAGES+=" luci-theme-alpha luci-app-alpha-config"
-
-# RTA Theme
-PACKAGES+=" luci-theme-rta luci-app-rtaconfig"
+# (Base64/Alpha/RTA theme DIHAPUS: paket eksternal gagal diunduh saat build
+#  sehingga opkg gagal install -> build berhenti di package_install)
 
 # PHP8
 # (Stable fix: php8 suite DIHAPUS — 78MB, hanya untuk tinyfm)
