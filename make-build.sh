@@ -35,7 +35,7 @@ PACKAGES+=" luci-app-adguardhome ca-certificates ca-bundle tar unzip bind-tools"
 
 # NAS and Hard disk tools
 PACKAGES+=" luci-app-diskman luci-app-hd-idle luci-app-disks-info smartmontools kmod-usb-storage kmod-usb-storage-uas ntfs-3g"
-PACKAGES+=" samba4-server luci-app-samba4 aria2 ariang luci-app-aria2"  # tinyfm DIHAPUS (butuh php8, tidak perlu)
+PACKAGES+=" aria2 ariang luci-app-aria2"  # tinyfm DIHAPUS (butuh php8, tidak perlu); samba4-server+luci-app-samba4 DIHAPUS (fokus DNS server AGH murni)
 
 # (Optimized: Docker DIHAPUS — tidak dibutuhkan untuk server AGH murni)
 
@@ -43,7 +43,7 @@ PACKAGES+=" samba4-server luci-app-samba4 aria2 ariang luci-app-aria2"  # tinyfm
 # (Stable fix: vnstat2/vnstati2/luci-app-vnstat2 DIHAPUS total — db readonly di overlay)
 # (internet-detector-mod-modem-restart DIHAPUS — hanya untuk modem)
 # (r12: luci-app-netmonitor DIHAPUS — menarik dependency netdata yang error + makan RAM)
-PACKAGES+=" internet-detector luci-app-internet-detector nlbwmon luci-app-nlbwmon"
+PACKAGES+=" internet-detector luci-app-internet-detector"  # nlbwmon+luci-app-nlbwmon DIHAPUS (fokus DNS server AGH murni)
 
 # Speedtest
 PACKAGES+=" librespeed-go python3-speedtest-cli iperf3 luci-app-netspeedtest"
