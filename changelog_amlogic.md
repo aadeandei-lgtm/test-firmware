@@ -1,5 +1,13 @@
 # What's New!
 
+**Changelog** (14-10-2026) — server DNS AdGuardHome:
+- resolver box sendiri: `list dns` di `files/etc/config/network` diubah dari `9.9.9.9` menjadi `192.168.3.2` (AdGuardHome lokal), dan di-assert ulang di `files/etc/uci-defaults/99-init-settings.sh` agar tidak kembali ke 9.9.9.9 saat first boot,
+- `make-build.sh`: `EXCLUDED+=" -procd-ujail"` dipindah ke bawah definisi `EXCLUDED` — sebelumnya nilai `+=` tertimpa baris `EXCLUDED="..."` sehingga paket itu tetap masuk image (bukti: `Installing procd-ujail` 1 -> 0, total paket 322 -> 321),
+- workflow: `steps.imagebuilder.outputs.status` diganti `steps.compile.outputs.status` (step `imagebuilder` tidak ada; yang benar `download`/`packages`/`scripts`/`compile`),
+- workflow: `if [ "$CLEAN" == "true" ]; echo ...; then make clean; fi` diperbaiki menjadi `if [ "$CLEAN" == "true" ]; then echo ...; make clean; fi` — sintaks lama menjalankan `make clean` tanpa syarat,
+- paket LuCI eksternal yang tidak tersedia di feed 23.05.3 dihapus (Base64, Alpha Theme/Config, RTA Theme/Config) agar build tidak mati di `package_install Error 255`,
+- `GITHUB_TOKEN` diteruskan ke step unduh paket (cegah rate-limit anonim) + gagal keras bila URL inti AdGuardHome kosong.
+
 **Changelog** (05-05-2024):
 - add wifi on for HGP, unknown for BH (experimental) [PR#18](https://github.com/frizkyiman/friWrt-MyWrtBuilder/pull/18)
 - add new tunnel option; neko-openclash,

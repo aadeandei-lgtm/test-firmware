@@ -396,13 +396,13 @@ jobs:
           overwrite: false
           prerelease: ${{ env.PRE_RELEASE }}
           body: |
-            ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/frizkyiman/friWrt-MyWrtBuilder/${{ env.RELEASE_TAG }}/total?style=for-the-badge&logo=Openwrt)
+            ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/${{ github.repository }}/${{ env.RELEASE_TAG }}/total?style=for-the-badge&logo=Openwrt)
             ### friWrt ${{ env.BASE }}-${{ env.BRANCH }} Image information
             Build date: ${{ env.DATETIME }}
             
             ${{ steps.changelog.outputs.CHANGELOG }}
             
-            See [here](https://github.com/frizkyiman/friWrt-MyWrtBuilder?tab=readme-ov-file#firmware-details) for more detail feature and other information.
+            See [here](https://github.com/${{ github.repository }}?tab=readme-ov-file#firmware-details) for more detail feature and other information.
             - Default IP: 192.168.3.2
             - Default username: root
             - Default password: friwrt
