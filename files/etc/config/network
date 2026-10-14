@@ -19,5 +19,8 @@ config interface 'lan'
 	option ipaddr '192.168.3.2'
 	option netmask '255.255.255.0'
 	option gateway '192.168.3.1'
-	list dns '9.9.9.9'
+	# Resolver box sendiri = AdGuardHome lokal (port 53, redirect=none).
+	# Sebelumnya 9.9.9.9: query health-check/tooling di box melewati AGH.
+	# AGH tetap resolve lewat upstream sendiri (8.8.8.8/9.9.9.9/DoH) -> tidak ada loop.
+	list dns '192.168.3.2'
 	option delegate '0'

@@ -39,6 +39,10 @@ echo "Setup WAN and LAN Interface"
 uci set network.lan.ipaddr="192.168.3.2"
 uci set network.lan.netmask="255.255.255.0"
 uci set network.lan.gateway="192.168.3.1"
+# Resolver box sendiri = AdGuardHome lokal (bukan 9.9.9.9), agar query
+# health-check/tooling di box ikut difilter AGH.
+uci -q delete network.lan.dns
+uci add_list network.lan.dns="192.168.3.2"
 uci set network.wan=interface 
 uci set network.wan.proto='modemmanager'
 uci set network.wan.device='/sys/devices/platform/scb/fd500000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0/usb2/2-1'
