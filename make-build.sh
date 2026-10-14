@@ -81,7 +81,6 @@ fi
 if [ "$TYPE" == "AMLOGIC" ]; then
     # (Optimized: WiFi/ath9k/hostapd DIHAPUS — device full LAN via Ethernet)
     PACKAGES+=" luci-app-amlogic btrfs-progs kmod-crypto-acompress kmod-crypto-crc32c kmod-crypto-hash kmod-fs-btrfs"
-    EXCLUDED+=" -procd-ujail"
 fi
 
 PACKAGES+=" $misc zram-swap adb parted losetup resize2fs luci luci-ssl block-mount luci-app-poweroff luci-app-log-viewer htop bash curl wget wget-ssl tar unzip unrar gzip jq luci-app-ttyd nano httping screen openssh-sftp-server"
@@ -100,6 +99,13 @@ elif [ "${RELEASE_BRANCH%:*}" == "immortalwrt" ]; then
     if [ "$ARCH_2" == "x86_64" ]; then
       EXCLUDED+=" -kmod-usb-net-rtl8152-vendor"
     fi
+fi
+
+# Amlogic: procd-ujail di-exclude (butuh namespaces yang tidak ada di kernel vendor Amlogic).
+# NB: dulu baris ini ada di blok TYPE=AMLOGIC di ATAS definisi EXCLUDED, sehingga
+# nilai " -procd-ujail" langsung tertimpa oleh EXCLUDED="..." dan tidak pernah terpakai.
+if [ "$TYPE" == "AMLOGIC" ]; then
+    EXCLUDED+=" -procd-ujail"
 fi
 
 # Custom Files

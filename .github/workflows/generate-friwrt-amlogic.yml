@@ -301,14 +301,14 @@ jobs:
           if [[ "$TUNNEL" == "all" && "$BRANCH" != "21.02.7" ]]; then
             for t in openclash-passwall neko-passwall neko-openclash openclash-passwall-neko openclash passwall neko no-tunnel; do
               echo "Compiling with VPN Client: $t"
-              if [ "$CLEAN" == "true" ]; echo "Start 'make clean' before building images."; then make clean; fi
+              if [ "$CLEAN" == "true" ]; then echo "Start 'make clean' before building images."; make clean; fi
               time bash make-build.sh $PROFILE $t
               for file in bin/targets/"$TARGET_SYSTEM"/*rootfs.tar.gz; do mv "$file" compiled_images; done
             done
           elif [[ "$TUNNEL" == "all" && "$BRANCH" = "21.02.7" ]]; then
             for t in openclash no-tunnel; do
               echo "Compiling with VPN Client: $t"
-              if [ "$CLEAN" == "true" ]; echo "Start 'make clean' before building images."; then make clean; fi
+              if [ "$CLEAN" == "true" ]; then echo "Start 'make clean' before building images."; make clean; fi
               time bash make-build.sh $PROFILE $t
               for file in bin/targets/"$TARGET_SYSTEM"/*rootfs.tar.gz; do mv "$file" compiled_images; done
             done
@@ -322,14 +322,14 @@ jobs:
           echo -e "Server space usage after compilation: \n$(df -hT ${PWD}) \n"
 
       - name: Clear server space
-        if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
+        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
         run: |
           cd $WORKING_DIR
           rm -rf $(ls . | grep -vE "^compiled_images$|^changelog_amlogic.md$" | xargs) 2>/dev/null
           df -hT ${PWD}
 
       - name: Packaging ${{ inputs.release_branch }}
-        if: ${{ steps.imagebuilder.outputs.status }} == 'success' && !cancelled()
+        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
         uses: ophub/amlogic-s9xxx-openwrt@main
         with:
           openwrt_path: $WORKING_DIR/compiled_images/*rootfs.tar.gz
