@@ -1,6 +1,14 @@
 #!/bin/bash
 # This script for custom download the latest packages version from snapshots/stable repo's url and github releases.
 # Put file name and url base.
+# GitHub API auth: pakai GITHUB_TOKEN dari workflow (limit 1000 req/jam).
+# Tanpa token, request anonim dibatasi 60 req/jam per IP runner -> download
+# paket diam-diam gagal (rate-limit) dan build error di opkg "Unknown package".
+GH_AUTH=()
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+    GH_AUTH=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+fi
+
 
 # Download packages from official snapshots, stable repo's urls and custom repo's.
 {
@@ -71,6 +79,11 @@ files2+=(
     "luci-app-lite-watchdog|https://api.github.com/repos/4IceG/luci-app-lite-watchdog/releases/latest"
     "luci-app-3ginfo-lite|https://api.github.com/repos/4IceG/luci-app-3ginfo-lite/releases/latest"
     "luci-app-netmonitor|https://api.github.com/repos/rtaserver/rta-packages/releases"
+    "luci-app-base64|https://api.github.com/repos/rtaserver/rta-packages/releases"
+    "luci-theme-rta|https://api.github.com/repos/rtaserver/RTA-Theme-OpenWrt/releases/latest"
+    "luci-app-rtaconfig|https://api.github.com/repos/rtaserver/RTA-Theme-OpenWrt/releases/latest"
+    "luci-theme-alpha|https://api.github.com/repos/derisamedia/luci-theme-alpha/releases/latest"
+    "luci-app-alpha-config|https://api.github.com/repos/derisamedia/luci-theme-alpha/releases/latest"
 )
 
 echo "#########################################"
@@ -80,7 +93,10 @@ echo "#"
 for entry in "${files2[@]}"; do
     IFS="|" read -r filename2 base_url <<< "$entry"
     echo "Processing file: $filename2"
-    file_urls=$(curl -s "$base_url" | grep "browser_download_url" | grep -oE "https.*/${filename2}_[_0-9a-zA-Z\._~-]*\.ipk" | sort -V | tail -n 1)
+    file_urls=$(curl -s "${GH_AUTH[@]}" "$base_url" | grep "browser_download_url" | grep -oE "https.*/${filename2}_[_0-9a-zA-Z\._~-]*\.ipk" | sort -V | tail -n 1)
+    if [ -z "$file_urls" ]; then
+        echo "WARNING: [$filename2] tidak ketemu di $base_url (kemungkinan rate-limit GitHub API atau nama aset berubah) - paket di-skip!"
+    fi
     for file_url in $file_urls; do
         if [ ! -z "$file_url" ]; then
             echo "Downloading $(basename "$file_url")"
