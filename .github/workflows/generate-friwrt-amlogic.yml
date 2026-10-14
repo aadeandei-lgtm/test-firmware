@@ -39,7 +39,7 @@ on:
           - b860h
           - nanopi-r5s
       openwrt_kernel:
-        description: "Select kernel version"
+        description: "Select kernel version (pin versi lama bisa 404 kalau sudah dihapus dari ophub/kernel - aman dipakai bersama auto_kernel=true)"
         required: false
         default: "5.15.1_6.1.1"
         type: choice
@@ -249,6 +249,8 @@ jobs:
       - name: Download External Packages
         id: packages
         if: steps.download.outputs.status == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd $WORKING_DIR
           bash scripts/external-package-urls.sh
@@ -263,6 +265,8 @@ jobs:
       - name: Run Patch and DIY Scripts
         id: scripts
         if: steps.packages.outputs.status == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd $WORKING_DIR
           bash scripts/builder-patch.sh
