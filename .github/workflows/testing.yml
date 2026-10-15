@@ -184,19 +184,9 @@ jobs:
           bash scripts/builder-patch.sh
           bash scripts/agh-core.sh
           bash scripts/misc.sh
-          if [[ "$TUNNEL" == "all" && "$BRANCH" != "21.02.7" ]]; then 
-              echo "VPN Client: $TUNNEL"
-              bash scripts/tunnel_app.sh openclash-passwall
-          elif [[ ("$TUNNEL" == "passwall" || "$TUNNEL" == "openclash-passwall") && "$BRANCH" != "21.02.7" || "$TUNNEL" == "openclash" ]]; then
-              echo "VPN Client: $TUNNEL"
-              bash scripts/tunnel_app.sh "$TUNNEL"
-          elif [[ "$TUNNEL" == "all" && "$BRANCH" = "21.02.7" ]]; then 
-              echo "VPN Client: $TUNNEL"
-              bash scripts/tunnel_app.sh openclash
-          else
-              echo "No VPN Client selected"
-          fi
-          if [ "$TUNNEL" = "openclash" ] || [ "$TUNNEL" = "openclash-passwall" ] || [ "$TUNNEL" = "all" ]; then bash scripts/clash-core.sh; fi
+          # r9: seluruh cabang unduh/patch VPN client DIHAPUS. Build ini khusus DNS server
+          # AGH murni — tidak ada paket VPN (openclash/passwall/neko) yang diunduh.
+          echo "VPN Client: disabled (DNS-server-only build)"
           ls packages
           echo "status=success" >> $GITHUB_OUTPUT
           echo -e "Server space usage before starting to compile: \n$(df -hT ${PWD}) \n"

@@ -109,33 +109,9 @@ else
   echo "src/gz custom_arch https://raw.githubusercontent.com/lrdrdn/my-opkg-repo/main/$(grep "OPENWRT_ARCH" /etc/os-release | awk -F '"' '{print $2}')" >> /etc/opkg/customfeeds.conf
 fi
 
-# setting firewall for samba4
-echo "Setup SAMBA4 firewall"
-uci -q delete firewall.samba_nsds_nt
-uci set firewall.samba_nsds_nt="rule"
-uci set firewall.samba_nsds_nt.name="NoTrack-Samba/NS/DS"
-uci set firewall.samba_nsds_nt.src="lan"
-uci set firewall.samba_nsds_nt.dest="lan"
-uci set firewall.samba_nsds_nt.dest_port="137-138"
-uci set firewall.samba_nsds_nt.proto="udp"
-uci set firewall.samba_nsds_nt.target="NOTRACK"
-uci -q delete firewall.samba_ss_nt
-uci set firewall.samba_ss_nt="rule"
-uci set firewall.samba_ss_nt.name="NoTrack-Samba/SS"
-uci set firewall.samba_ss_nt.src="lan"
-uci set firewall.samba_ss_nt.dest="lan"
-uci set firewall.samba_ss_nt.dest_port="139"
-uci set firewall.samba_ss_nt.proto="tcp"
-uci set firewall.samba_ss_nt.target="NOTRACK"
-uci -q delete firewall.samba_smb_nt
-uci set firewall.samba_smb_nt="rule"
-uci set firewall.samba_smb_nt.name="NoTrack-Samba/SMB"
-uci set firewall.samba_smb_nt.src="lan"
-uci set firewall.samba_smb_nt.dest="lan"
-uci set firewall.samba_smb_nt.dest_port="445"
-uci set firewall.samba_smb_nt.proto="tcp"
-uci set firewall.samba_smb_nt.target="NOTRACK"
-uci commit firewall
+# r9: blok firewall SAMBA4 (NOTRACK 137-138/139/445) DIHAPUS — samba4-server sudah
+# tidak dipasang pada build DNS-murni ini, jadi rule ini hanya menambah entri firewall
+# yang tidak pernah dipakai.
 
 # set argon as default theme
 echo "Setup Default Theme"
@@ -156,68 +132,34 @@ sed -i -e '/413c:81d7/,+5d' /etc/usb-mode.json
 uci set xmm-modem.@xmm-modem[0].enable='0'
 uci commit
 
-# setup nlbwmon database dir
-uci set nlbwmon.@nlbwmon[0].database_directory='/etc/nlbwmon'
-uci set nlbwmon.@nlbwmon[0].commit_interval='3h'
-uci set nlbwmon.@nlbwmon[0].refresh_interval='60s'
-uci commit nlbwmon
-bash /etc/init.d/nlbwmon restart
-
-# setup auto vnstat database backup
-sed -i 's/;DatabaseDir "\/var\/lib\/vnstat"/DatabaseDir "\/etc\/vnstat"/' /etc/vnstat.conf
-mkdir -p /etc/vnstat
-chmod +x /etc/init.d/vnstat_backup
-bash /etc/init.d/vnstat_backup enable
+# r9: setup nlbwmon & auto-backup vnstat DIHAPUS — paket nlbwmon dan
+# vnstat2/vnstati2 sudah tidak dipasang (monitoring DB di overlay readonly).
+# Blok ini dulu menghasilkan error `uci: Invalid argument` + service not found tiap boot.
 
 # adjusting app catagory
 sed -i 's/services/nas/g' /usr/lib/lua/luci/controller/aria2.lua 2>/dev/null || sed -i 's/services/nas/g' /usr/share/luci/menu.d/luci-app-aria2.json
-sed -i 's/services/nas/g' /usr/share/luci/menu.d/luci-app-samba4.json
 sed -i 's/services/nas/g' /usr/share/luci/menu.d/luci-app-hd-idle.json
-sed -i 's/services/modem/g' /usr/share/luci/menu.d/luci-app-lite-watchdog.json
+# r9: baris menu.d luci-app-samba4.json & luci-app-lite-watchdog.json DIHAPUS —
+# kedua paket itu tidak dipasang pada build ini, jadi sed-nya gagal dan
+# memunculkan "No such file or directory" di log first boot.
 
 # setup misc settings
 sed -i 's/\[ -f \/etc\/banner \] && cat \/etc\/banner/#&/' /etc/profile
 sed -i 's/\[ -n "$FAILSAFE" \] && cat \/etc\/banner.failsafe/& || \/usr\/bin\/neofetch/' /etc/profile
-chmod +x /root/fix-tinyfm.sh && bash /root/fix-tinyfm.sh
+# r9: baris `chmod +x /root/fix-tinyfm.sh && bash /root/fix-tinyfm.sh` DIHAPUS —
+# luci-app-tinyfm + php8 sudah tidak dipasang, jadi file & kebutuhan patch-nya tidak ada.
 chmod +x /root/install2.sh && bash /root/install2.sh
 chmod +x /sbin/sync_time.sh
 chmod +x /sbin/free.sh
 chmod +x /usr/bin/neofetch
 chmod +x /usr/bin/clock
 chmod +x /usr/bin/mount_hdd
-chmod +x /usr/bin/openclash.sh
 chmod +x /usr/bin/cek_sms.sh
 
-# configurating openclash
-if opkg list-installed | grep luci-app-openclash > /dev/null; then
-  echo "Openclash Detected!"
-  echo "Start Patch YACD and Openclash Core"
-  if [ -d "/usr/share/openclash/ui/yacd.new" ]; then
-    echo "Configuring YACD..."
-    if mv /usr/share/openclash/ui/yacd /usr/share/openclash/ui/yacd.old; then
-      mv /usr/share/openclash/ui/yacd.new /usr/share/openclash/ui/yacd
-    fi
-  fi
-  echo "Configuring Core..."
-  chmod +x /etc/openclash/core/clash
-  chmod +x /etc/openclash/core/clash_tun
-  chmod +x /etc/openclash/core/clash_meta
-  chmod +x /usr/bin/patchoc.sh
-  echo "Patching Openclash Overview"
-  bash /usr/bin/patchoc.sh
-  sed -i '/exit 0/i #/usr/bin/patchoc.sh' /etc/rc.local
-  echo "YACD and Core setup complete!"
-else
-  echo "No Openclash Detected."
-  uci delete internet-detector.Openclash
-  uci commit internet-detector
-  service internet-detector restart
-fi
-
-# configurating neko
-if opkg list-installed | grep luci-app-neko > /dev/null; then
-  chmod +x /etc/neko/core/mihomo
-fi
+# r9: blok "configurating openclash" dan "configurating neko" DIHAPUS TOTAL.
+# Paket VPN client tidak pernah dipasang pada build ini, dan helper /usr/bin/openclash.sh
+# + /usr/bin/patchoc.sh juga sudah dihapus dari repo — guard `if opkg list-installed`
+# di sini jadi kode mati yang hanya menambah baris tanpa efek.
 
 # adding new line for enable i2c oled display
 if grep -q "Raspberry Pi 4\|Raspberry Pi 3" /proc/cpuinfo; then

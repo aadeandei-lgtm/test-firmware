@@ -9,26 +9,12 @@ PACKAGES=""
 
 # (Optimized: modem/USB-LAN driver & tools DIHAPUS — target device full LAN via Ethernet)
 
-# Tunnel option
-OPENCLASH_FW3="coreutils-nohup bash iptables dnsmasq-full curl ca-certificates ipset ip-full iptables-mod-tproxy iptables-mod-extra libcap libcap-bin ruby ruby-yaml kmod-tun unzip luci-compat luci luci-base luci-app-openclash"
-OPENCLASH_FW4="coreutils-nohup bash dnsmasq-full curl ca-certificates ipset ip-full libcap libcap-bin ruby ruby-yaml kmod-tun kmod-inet-diag unzip kmod-nft-tproxy luci-compat luci luci-base luci-app-openclash"
-NEKO="bash kmod-tun php8 php8-cgi luci-app-neko"
-PASSWALL="ipset ipt2socks iptables iptables-legacy iptables-mod-iprange iptables-mod-socket iptables-mod-tproxy kmod-ipt-nat coreutils coreutils-base64 coreutils-nohup curl dns2socks ip-full libuci-lua lua luci-compat luci-lib-jsonc microsocks resolveip tcping unzip dns2tcp brook hysteria trojan-go xray-core xray-plugin sing-box chinadns-ng haproxy ip6tables-mod-nat kcptun-client naiveproxy pdnsd-alt shadowsocks-libev-ss-local shadowsocks-libev-ss-redir shadowsocks-libev-ss-server shadowsocks-rust-sslocal shadowsocksr-libev-ssr-local shadowsocksr-libev-ssr-redir shadowsocksr-libev-ssr-server simple-obfs trojan-plus v2ray-core v2ray-plugin luci-app-passwall luci-app-passwall2"
-if [ "$2" == "openclash" ]; then
-    PACKAGES+=" $([ "$(echo "$BRANCH" | cut -d'.' -f1)" == "21" ] && echo "$OPENCLASH_FW3" || echo "$OPENCLASH_FW4")"
-elif [ "$2" == "neko" ]; then
-    PACKAGES+=" $NEKO"
-elif [ "$2" == "passwall" ]; then
-    PACKAGES+=" $PASSWALL"
-elif [ "$2" == "neko-openclash" ]; then
-    PACKAGES+=" $([ "$(echo "$BRANCH" | cut -d'.' -f1)" == "21" ] && echo "$OPENCLASH_FW3" || echo "$OPENCLASH_FW4") $NEKO"
-elif [ "$2" == "openclash-passwall" ]; then
-    PACKAGES+=" $([ "$(echo "$BRANCH" | cut -d'.' -f1)" == "21" ] && echo "$OPENCLASH_FW3" || echo "$OPENCLASH_FW4") $PASSWALL"
-elif [ "$2" == "neko-passwall" ]; then
-    PACKAGES+=" $NEKO $PASSWALL"
-elif [ "$2" == "openclash-passwall-neko" ]; then
-    PACKAGES+=" $([ "$(echo "$BRANCH" | cut -d'.' -f1)" == "21" ] && echo "$OPENCLASH_FW3" || echo "$OPENCLASH_FW4") $NEKO $PASSWALL"
-fi
+# (r9: blok "Tunnel option" DIHAPUS TOTAL — OPENCLASH_FW3/FW4, NEKO, PASSWALL beserta
+#  seluruh cabang pemilihan paketnya. Build ini khusus server DNS (AGH) murni, jadi
+#  paket VPN client tidak pernah dipasang. Menghapusnya di sini = satu sumber kebenaran;
+#  argumen $2 dari workflow sekarang diabaikan, tidak lagi menambah paket apa pun.
+#  Semua paket VPN (openclash/passwall/neko/xray/sing-box/shadowsocks/dll) tidak akan
+#  muncul lagi di image. Kalau nanti butuh VPN client, kembalikan blok ini dari git history.)
 
 # Adguardhome
 PACKAGES+=" luci-app-adguardhome ca-certificates ca-bundle tar unzip bind-tools"
@@ -43,10 +29,15 @@ PACKAGES+=" aria2 ariang luci-app-aria2"  # tinyfm DIHAPUS (butuh php8, tidak pe
 # (Stable fix: vnstat2/vnstati2/luci-app-vnstat2 DIHAPUS total — db readonly di overlay)
 # (internet-detector-mod-modem-restart DIHAPUS — hanya untuk modem)
 # (r12: luci-app-netmonitor DIHAPUS — menarik dependency netdata yang error + makan RAM)
-PACKAGES+=" internet-detector luci-app-internet-detector"  # nlbwmon+luci-app-nlbwmon DIHAPUS (fokus DNS server AGH murni)
+# (r9: internet-detector + luci-app-internet-detector DIHAPUS — tidak dipakai pada server DNS
+#  murni; paketnya dari feed eksternal fantastic-packages sehingga ikut menambah titik gagal build)
+# nlbwmon+luci-app-nlbwmon DIHAPUS (fokus DNS server AGH murni)
 
 # Speedtest
-PACKAGES+=" librespeed-go python3-speedtest-cli iperf3 luci-app-netspeedtest"
+# (r9: librespeed-go + python3-speedtest-cli + iperf3 + luci-app-netspeedtest DIHAPUS.
+#  Ini grup terbesar yang bisa dipangkas: python3-speedtest-cli menarik SELURUH suite
+#  python3-* (9 paket, ~4,8 MB) hanya untuk tes kecepatan — tidak diperlukan server DNS.
+#  Hemat ~9,4 MB + 13 paket.)
 
 # Argon Theme
 PACKAGES+=" luci-theme-argon luci-app-argon-config"
@@ -91,7 +82,13 @@ PACKAGES+=" haveged irqbalance"
 # Exclude package (must use - before packages name)
 # dnsmasq/dnsmasq-full dihapus: AGH langsung pegang port 53 (server AGH murni untuk MikroTik)
 # modemmanager/netdata/vnstat/tinyfm/php8 dihapus: tidak dibutuhkan, makan RAM & rawan error
+# r9 — modem PPP & IPv6: paket ini datang dari "Default Packages" ImageBuilder (bukan dari
+#   PACKAGES+= kita), jadi HARUS di-exclude. Device ini full-LAN via Ethernet (tanpa modem)
+#   dan IPv6 sudah dimatikan total di 95-noipv6-and-fixes.sh -> keduanya murni beban.
+#   CATATAN: luci-proto-ppp & luci-proto-ipv6 TIDAK boleh di-exclude — keduanya dependensi
+#   wajib luci-light (yang menarik luci & luci-ssl). Meng-exclude-nya = LuCI rusak total.
 EXCLUDED=" -modemmanager -luci-proto-modemmanager -netdata -vnstat2 -vnstati2 -luci-app-vnstat2 -luci-app-tinyfm -php8 -php8-fpm -php8-fastcgi"
+EXCLUDED+=" -ppp -ppp-mod-pppoe -odhcp6c -odhcpd-ipv6only"
 if [ "${RELEASE_BRANCH%:*}" == "openwrt" ]; then
     EXCLUDED+=" -dnsmasq -dnsmasq-full"
 elif [ "${RELEASE_BRANCH%:*}" == "immortalwrt" ]; then

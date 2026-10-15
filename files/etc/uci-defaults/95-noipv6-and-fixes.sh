@@ -14,9 +14,10 @@ uci -q delete network.lan.ip6assign
 uci -q delete network.globals.ula_prefix
 uci commit network
 
-# Matikan odhcp6c (DHCPv6 client) & dhcpv6
-/etc/init.d/odhcp6c disable 2>/dev/null
-/etc/init.d/odhcp6c stop 2>/dev/null
+# Matikan IPv6 DHCP client/relay — paketnya (odhcp6c, odhcpd-ipv6only) sudah
+# di-exclude dari build, jadi file init-nya tidak ada. Guard -f supaya script
+# tidak memunculkan error "not found" saat first boot.
+[ -x /etc/init.d/odhcp6c ] && { /etc/init.d/odhcp6c disable 2>/dev/null; /etc/init.d/odhcp6c stop 2>/dev/null; }
 
 # Set AGH: matikan juga DNS-over-IPv6 listener (biar bersih)
 # (AGH bind_hosts 0.0.0.0 sudah IPv4 saja)
@@ -24,14 +25,12 @@ uci commit network
 # === 2. FIX SISA (dari analisa log ssh4) ===
 # Hapus netdata + luci-app-netmonitor (sumber error plugin + makan RAM)
 opkg remove --force-depends netdata luci-app-netmonitor 2>/dev/null
-/etc/init.d/netdata stop 2>/dev/null
-/etc/init.d/netdata disable 2>/dev/null
+[ -x /etc/init.d/netdata ] && { /etc/init.d/netdata stop 2>/dev/null; /etc/init.d/netdata disable 2>/dev/null; }
 
 # Disable fixcpufreq.pl (error compile perl)
 chmod -x /usr/sbin/fixcpufreq.pl 2>/dev/null
 
-# Samba: bind ke br-lan saja (hilangkan error IPv6 "Address not available")
-uci -q set samba4.@samba[0].interface='br-lan'
-uci commit samba4
+# r9: blok "Samba: bind ke br-lan" DIHAPUS — samba4 tidak dipasang pada build ini.
+# (Kalau nanti samba dipakai lagi, kembalikan: uci set samba4.@samba[0].interface='br-lan')
 
 exit 0

@@ -1,5 +1,15 @@
 # What's New!
 
+**Changelog** (15-10-2026) — build minimal + hapus paket VPN client:
+- **paket VPN client dihapus total** dari build. `make-build.sh`: blok `Tunnel option` (`OPENCLASH_FW3/FW4`, `NEKO`, `PASSWALL` + 7 cabang pemilihan) dihapus; argumen `$2` diabaikan. Workflow `generate-friwrt-amlogic.yml` dipangkas jadi satu jalur `no-tunnel`, dan `generate-friwrt.yml` + `testing.yml` ikut dibersihkan agar tidak ada paket VPN yang diunduh,
+- script yang tidak dipakai lagi dihapus: `scripts/tunnel_app.sh`, `scripts/clash-core.sh`, `scripts/neko_core.sh`, `files/usr/bin/openclash.sh`, `files/usr/bin/patchoc.sh`; blok guard OpenClash/Neko di `99-init-settings.sh` ikut dihapus,
+- opsi `tunnel` di workflow tinggal `no-tunnel` supaya tidak ada build yang tanpa sengaja memasang VPN client,
+- **speedtest dihapus** (`luci-app-netspeedtest`, `librespeed-go`, `python3-speedtest-cli`, `iperf3`): `python3-speedtest-cli` menarik seluruh suite `python3-*` (9 paket, ~4,8 MB) hanya untuk tes kecepatan. Hemat ~9,4 MB + 13 paket; entri unduhannya di `external-package-urls.sh` ikut dihapus,
+- **internet-detector dihapus** (`internet-detector`, `luci-app-internet-detector`) beserta config orphan `files/etc/config/internet-detector` dan blok uci-defaultnya,
+- **modem PPP & IPv6 client di-exclude** (`ppp`, `ppp-mod-pppoe`, `odhcp6c`, `odhcpd-ipv6only`) — datang dari Default Packages ImageBuilder, jadi harus lewat `EXCLUDED`. Catatan: `luci-proto-ppp` & `luci-proto-ipv6` TIDAK di-exclude karena dependensi wajib `luci-light` (buang = LuCI rusak),
+- barang orphan dibersihkan: config `samba4` + `watchdog`, blok firewall NOTRACK Samba4, blok `nlbwmon`/`vnstat_backup`, `files/etc/init.d/vnstat_backup`, `files/root/fix-tinyfm.sh`, serta `sed` ke file menu.d paket yang tidak dipasang (samba4/lite-watchdog) yang tadinya error tiap first boot,
+- guard `[ -x /etc/init.d/odhcp6c ]` dan `[ -x /etc/init.d/netdata ]` ditambahkan agar first boot tidak memunculkan "not found".
+
 **Changelog** (14-10-2026) — server DNS AdGuardHome:
 - resolver box sendiri: `list dns` di `files/etc/config/network` diubah dari `9.9.9.9` menjadi `192.168.3.2` (AdGuardHome lokal), dan di-assert ulang di `files/etc/uci-defaults/99-init-settings.sh` agar tidak kembali ke 9.9.9.9 saat first boot,
 - `make-build.sh`: `EXCLUDED+=" -procd-ujail"` dipindah ke bawah definisi `EXCLUDED` — sebelumnya nilai `+=` tertimpa baris `EXCLUDED="..."` sehingga paket itu tetap masuk image (bukti: `Installing procd-ujail` 1 -> 0, total paket 322 -> 321),
