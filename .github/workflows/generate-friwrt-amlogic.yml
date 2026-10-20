@@ -304,6 +304,32 @@ jobs:
           kernel_usage: ${{ inputs.kernel_usage }}
           builder_name: friWrt
 
+      - name: Patch default DTB for T95Z-Plus (s912)
+        if: ${{ env.PACKAGED_STATUS == 'success' && env.openwrt_board == 's912' }} && !cancelled()
+        run: |
+          # Bukti audit r11: uEnv.txt bawaan menunjuk meson-gxm-octopus-planet.dtb (chipset
+          # benar/S912, board SALAH) -> boot pertama T95Z-Plus berisiko tanpa video HDMI.
+          # T95Z-Plus = compatible amlogic,q201 (bukti: /proc/device-tree di box hidup).
+          # Ganti FDT default ke DTB board yang benar SEBELUM checksum (step berikutnya).
+          cd ${{ env.PACKAGED_OUTPUTPATH }}
+          for img in *.img.gz; do
+            echo "Patch DTB di $img"
+            base=$(basename "$img" .gz)
+            gunzip -kf "$img"
+            loop=$(sudo losetup -fP --show "$PWD/$base")
+            sudo mkdir -p /tmp/patchfat
+            sudo mount "${loop}p1" /tmp/patchfat
+            sudo sed -i 's|^FDT=.*meson-gxm-octopus-planet.dtb$|FDT=/dtb/amlogic/meson-gxm-t95z-plus.dtb|' /tmp/patchfat/uEnv.txt
+            if [ -f /tmp/patchfat/extlinux/extlinux.conf ]; then
+              sudo sed -i 's|/dtb/amlogic/meson-gxm-octopus-planet.dtb|/dtb/amlogic/meson-gxm-t95z-plus.dtb|' /tmp/patchfat/extlinux/extlinux.conf
+            fi
+            grep -H FDT /tmp/patchfat/uEnv.txt
+            sudo umount /tmp/patchfat
+            sudo losetup -d "$loop"
+            gzip -f "$base"
+            sha256sum "$img"
+          done
+
       - name: Prepare file before upload
         if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
         id: prep_upload
