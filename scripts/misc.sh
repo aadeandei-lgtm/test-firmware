@@ -48,7 +48,7 @@ if [ "$TYPE" == "AMLOGIC" ]; then
     sed -i '/# setup misc settings/ a\chmod +x /lib/netifd/ppp-up' files/etc/uci-defaults/99-init-settings.sh
     sed -i '/# setup misc settings/ a\chmod +x /lib/netifd/wireless/mac80211.sh' files/etc/uci-defaults/99-init-settings.sh
     sed -i '/# setup misc settings/ a\chmod +x /lib/netifd/proto/dhcp.sh' files/etc/uci-defaults/99-init-settings.sh
-    sed -i '/# setup misc settings/ a\chmod +x /lib/nefitd/proto/dhcpv6.sh' files/etc/uci-defaults/99-init-settings.sh
+    sed -i '/# setup misc settings/ a\chmod +x /lib/netifd/proto/dhcpv6.sh' files/etc/uci-defaults/99-init-settings.sh
     sed -i '/# setup misc settings/ a\chmod +x /lib/netifd/proto/ppp.sh' files/etc/uci-defaults/99-init-settings.sh
 else
     rm -rf files/lib

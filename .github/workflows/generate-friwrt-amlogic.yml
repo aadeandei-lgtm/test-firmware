@@ -114,6 +114,7 @@ jobs:
   Generate:
     name: amlogic-${{ inputs.target }}-${{ inputs.release_branch }}-${{ inputs.tunnel }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 90   # hardening: cegah build menggantung makan kuota runner
     permissions:
       contents: write
       actions: write
@@ -312,11 +313,10 @@ jobs:
           cd ${{ env.PACKAGED_OUTPUTPATH }}
           for file in *.img.gz; do mv "$file" fri_$(basename "$file" .img.gz)$( echo "_$TUNNEL" )$([ "$REVISION_TAG" == "true" ] && echo _rev).img.gz; done
           for file in *rootfs.tar.gz; do mv "$file" fri_$(basename "$file" .tar.gz)$( echo "_$TUNNEL" )$([ "$REVISION_TAG" == "true" ] && echo _rev).tar.gz; done
-          if wget -q https://github.com/frizkyiman/friWrt-MyWrtBuilder/releases/download/amlogic-${{ env.openwrt_board }}-${{ env.BASE }}-${{ env.BRANCH }}-${{ env.DATEMONTH }}/sha256sums; then
-             rm -r *.sha && sha256sum *.gz >> sha256sums
-          else
-             rm -r *.sha && sha256sum *.gz > sha256sums
-          fi
+          # hardening: jangan campurkan checksum kita ke file release lama (append) —
+          # buat file sha256sums baru khusus artefak build ini saja.
+          rm -f *.sha
+          sha256sum *.gz > sha256sums
           ls -l
           echo "status=success" >> $GITHUB_OUTPUT
 
